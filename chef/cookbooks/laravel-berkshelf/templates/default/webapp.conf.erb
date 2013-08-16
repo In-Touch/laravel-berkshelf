@@ -1,0 +1,56 @@
+<VirtualHost *:80>
+    ServerName <%= @params[:server_name] %>
+    ServerAlias <% @params[:server_aliases].each do |a| %><%= "#{a}" %> <% end %>
+    DocumentRoot <%= @params[:docroot] %>
+
+    LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+    LogFormat "%{X-Forwarded-For}i %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" proxy
+
+    RewriteEngine On
+
+    <Directory <%= @params[:docroot] %>>
+        Options FollowSymLinks
+        AllowOverride All
+        Order allow,deny
+        Allow from all
+    </Directory>
+
+    # Check to see if we're beind a proxy / balancer
+    SetEnvIf X-Forwarded-For "^.*\..*\..*\..*" forwarded
+
+    # Apache processes SetEnvIf before Rewrites, but SetEnv after Rewrites
+    # So ... I use SetEnvIf here so that, although bad practice, you can check the app env in rewrite rules below
+    SetEnvIf ^ .* APPLICATION_ENVIRONMENT=<%= @params[:appenv] %>
+
+    DeflateFilterNote Input input_info
+    DeflateFilterNote Output output_info
+    DeflateFilterNote Ratio ratio_info
+
+    # If you're behind a proxy or load balancer, you should look into mod_rpaf
+    #RPAFenable On
+    #RPAFsethostname On
+    #RPAFproxy_ips 127.0.0.1 10.x.x.x
+    #RPAFheader X-Forwarded-For
+
+    CustomLog <%= @params[:logroot] %>/deflate.log deflate
+    ErrorLog <%= @params[:logroot] %>/error.log
+    CustomLog <%= @params[:logroot] %>/access.log combined env=!forwarded
+    CustomLog <%= @params[:logroot] %>/access.log proxy env=forwarded
+
+    RewriteMap  urldecode  int:unescape
+
+    RewriteLog <%= @params[:logroot] %>/rewrite.log
+    RewriteLogLevel 0
+
+    # Canonical host, <%= @params[:server_name] %>
+    RewriteCond %{HTTP_HOST}   !^<%= @params[:server_name] %> [NC]
+    RewriteCond %{HTTP_HOST}   !^$
+    RewriteRule ^/(.*)$        http://<%= @params[:server_name] %>/$1 [L,R=301]
+
+    RewriteCond %{DOCUMENT_ROOT}/system/maintenance.html -f
+    RewriteCond %{SCRIPT_FILENAME} !maintenance.html
+    RewriteRule ^.*$ /system/maintenance.html [L]
+
+    EnableSendfile off
+    EnableMMAP off
+</VirtualHost>

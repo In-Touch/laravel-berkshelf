@@ -20,5 +20,5 @@ composer.lock
 .DS_Store
 .idea
 
-chef/cookbooks
+chef/cookbooks/*
 !chef/cookbooks/laravel-berkshelf
