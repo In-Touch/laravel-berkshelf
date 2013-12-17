@@ -9,7 +9,24 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "laravel-berkshelf"
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "precise64-chef11"
+  if ENV['DIGITALOCEAN_CLIENTID']
+
+    # Need omnibus to get latest chef
+    config.omnibus.chef_version = :latest
+
+    config.ssh.private_key_path = '~/.ssh/id_rsa'
+    config.ssh.username = 'vagrant'
+
+    config.vm.box = 'digital_ocean'
+    config.vm.provider :digital_ocean do |provider|
+      provider.client_id = ENV['DIGITALOCEAN_CLIENTID']
+      provider.api_key = ENV['DIGITALOCEAN_APIKEY']
+      provider.setup = true
+      provider.image = "Ubuntu 12.04.3 x64"
+    end
+  else
+    config.vm.box = "precise64-chef11"
+  end
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
@@ -52,8 +69,8 @@ Vagrant.configure("2") do |config|
   # View the documentation for the provider you're using for more
   # information on available options.
 
-  config.ssh.max_tries = 40
-  config.ssh.timeout   = 120
+  #config.ssh.max_tries = 40
+  #config.ssh.timeout   = 120
 
   # The path to the Berksfile to use with Vagrant Berkshelf
   # config.berkshelf.berksfile_path = "./Berksfile"
