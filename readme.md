@@ -96,6 +96,19 @@ Installed is the default PHP 5.3.x (latest dot release in the Ubuntu repos) inst
 served via Apache 2.2.x (again, latest Ubuntu repo dot release) and running MySQL 5.5.x.  The default MySQL root password
 is in the Vagrantfile.
 
+### Deploying on Digital Ocean
+
+You can deploy your VM on Digital Ocean by using the digital\_ocean provider. Find the installation instruction here: https://github.com/smdahlen/vagrant-digitalocean
+
+If you are using a Mac, don't forget to install curl-ca-bundle as explained in the INSTALL section.
+
+Then, make sure to set the needed environment variables:
+
+```bash
+export DIGITALOCEAN_CLIENTID='12345yourclientID'
+export DIGITALOCEAN_APIKEY='yourapikey2341514515'
+```
+
 ### Licenses
 
 The [Laravel](http://laravel.com) framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT)
